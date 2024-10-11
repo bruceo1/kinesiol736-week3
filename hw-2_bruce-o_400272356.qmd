@@ -10,7 +10,7 @@ editor: visual
     ```{r}
     library(tidyverse)
     lotr_dialogue <- readr::read_csv(
-      "C:\\Users\\16133\\Downloads\\lord-of-the-rings-trilogy.csv"
+      "./lord-of-the-rings-trilogy.csv"
       )
     ```
 
