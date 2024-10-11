@@ -16,13 +16,13 @@ editor: visual
 
 2.  List all the ways this dataset is not tidy.
 
-3.  Some columns have multiple variables - male's and female's should be separated into a gender variable and the race should be separated into a race variable so that each column is one variable.
+    1.  Some columns have multiple variables - male's and female's should be separated into a gender variable and the race should be separated into a race variable so that each column is one variable.
 
-4.  Each row should have one observation - currently each row represents one movie, it should be organized with every row as a unique combination of movie race and gender
+    2.  Each row should have one observation - currently each row represents one movie, it should be organized with every row as a unique combination of movie race and gender
 
-5.  The columns have inconsistent capitalization in the naming and races
+    3.  The columns have inconsistent capitalization in the naming and races
 
-6.  How many columns and rows would you have if this dataset was tidy?
+3.  How many columns and rows would you have if this dataset was tidy?
 
 Columns: Movie, Gender, Race, Words Spoken = 4 columns
 
