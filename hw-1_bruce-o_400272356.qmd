@@ -1,0 +1,218 @@
+---
+title: "Homework assignment 1"
+author: "Owen Bruce"
+format: pdf
+---
+
+1. Install the babynames package.
+```{r}
+#install.packages('babynames')
+
+```
+
+2. How many variables and observations does this package contain?
+```{r}
+library(babynames)
+library(tidyverse)
+data(babynames)
+glimpse(babynames)
+
+```
+The package contains 5 variables with 1,924,665 observations.
+
+3. Create a data dictionary for each of the variables that includes the variable name, data
+type, and a description.
+```{r}
+(data_dictionary <- tibble::tibble(
+  variable_name = c("year", "sex", "name", "n", "prop"),
+    data_type = c("double", "character", "character", "integer", "double"), 
+    description = c("The year the data is from",
+   "The sex of the baby",
+   "The baby name",
+   "The number of babies born with that name in the specific year",
+   "n divided by total number of applicants in that year, 
+    which means proportions are of people of that sex with that name born in 
+   that year")))
+```
+
+
+4. What is the range of years covered in babynames?
+```{r}
+range(babynames$year)
+```
+The years covered range from 1880 to 2017.
+
+5. Create an object from the babynames package that does not include the variable n.
+```{r}
+baby_no_n <- babynames |> dplyr::select(!n)
+glimpse(baby_no_n)
+```
+
+6. What is one reason for not including n, but keeping the variable prop?
+
+Assessing names by the proportion (prop) instead of the frequency (n) allows for
+more accurate comparisons of popularity between years, as the increasing 
+population will result in greater frequencies of all names. 
+Proportion normalizes population.
+
+7. Using the object created in Question 5, what was the most popular name for both sexes
+in: a) the 2nd millennium? and b) the 3rd millennium?
+```{r}
+#select the 2nd millennium by removing the 3rd millennium
+baby_no_n |> dplyr::filter(year < 2000) |> 
+  #consolidate the names
+  dplyr::group_by(name) |> 
+  #add all of the proportions together
+  #(I think this results in the most popular name?)
+  dplyr::summarize(cumulative_prop = sum(prop)) |> 
+  #arrange in descending order
+  dplyr::arrange(desc(cumulative_prop))
+```
+```{r}
+#select the 3rd millennium
+baby_no_n |> dplyr::filter(year >= 2000) |> 
+  #consolidate the names
+  dplyr::group_by(name) |> 
+  #add all of the proportions together
+  dplyr::summarize(cumulative_prop = sum(prop)) |> 
+  #arrange in descending order
+  dplyr::arrange(desc(cumulative_prop))
+```
+John was the most popular name in the 2nd millennium, and Jacob is the most popular name in the 3rd millennium so far.
+
+8. What were the most popular names beginning with the letters Q, V, and X between 2000
+and 2012?
+```{r}
+#select the years between 2000 and 2012
+baby_no_n |> dplyr::filter(year >=2000 & year <=2012) |>
+  #select the names starting with Q, V, and X using the stringr package
+  dplyr::filter(stringr::str_starts(name, "Q") |
+                  stringr::str_starts(name, "V") |
+                  stringr::str_starts(name, "X")) |>
+  #consolidate the names
+  dplyr::group_by(name) |>
+  #add all of the proportions together
+  dplyr::summarize(cumulative_prop = sum(prop)) |>
+  #arrange in descending order
+  dplyr::arrange(desc(cumulative_prop))
+```
+The most popular names are shown above (Victoria, Xavier, Vanessa, etc)
+
+9. Create a new object that retains all the variables of the babynames package, but create a
+new column that contains the decade each year is a part of named decade.
+```{r}
+#I originally started making an incredibly long case_when() call but decided
+#there must be an easier way
+#and found the floor() function
+babynames_decade <- babynames |> dplyr::mutate(decade = floor(year/10) * 10)
+slice(babynames_decade, 14990)
+```
+
+10. What is the mean and median number of female and male babies in each decade?
+```{r}
+#Mean Female:
+babynames_decade |> dplyr::filter(sex == "F") |>
+  dplyr::group_by(decade, year) |>
+  dplyr::summarise(total_n = sum(n)) |>
+  dplyr::group_by(decade) |>
+  dplyr::summarize(mean_n = mean(total_n))
+#Mean Male:
+babynames_decade |> dplyr::filter(sex == "M") |>
+  dplyr::group_by(decade, year) |>
+  dplyr::summarise(total_n = sum(n)) |>
+  dplyr::group_by(decade) |>
+  dplyr::summarize(mean_n = mean(total_n))
+#Median Female:
+babynames_decade |> dplyr::filter(sex == "F") |>
+  dplyr::group_by(decade, year) |>
+  dplyr::summarise(total_n = sum(n)) |>
+  dplyr::group_by(decade) |>
+  dplyr::summarize(median_n = median(total_n))
+#Median Male:
+babynames_decade |> dplyr::filter(sex == "M") |>
+  dplyr::group_by(decade, year) |>
+  dplyr::summarise(total_n = sum(n)) |>
+  dplyr::group_by(decade) |>
+  dplyr::summarize(median_n = median(total_n))
+```
+
+
+11. In which decade(s) and year(s), was:
+
+a) your name the most popular?
+Years:
+```{r}
+#Two interpretations: Which years does my name have the highest popularity:
+babynames_decade |> dplyr::filter(name=="Owen") |> dplyr::arrange(desc(prop))
+#Which year is my name the most popular name (probably none of them):
+babynames_decade |> dplyr::group_by(year) |> dplyr::filter(n == max(n)) |>
+  dplyr::filter(name == "Owen")
+#as the output is blank, it is never the most popular
+```
+Decades:
+```{r}
+#Approach 1:
+babynames_decade |> dplyr::filter(name=="Owen") |> dplyr::group_by(decade, name) |>
+  dplyr::summarize(cumulative_prop = sum(prop)) |> 
+  dplyr::arrange(desc(cumulative_prop))
+#Approach 2:
+babynames_decade |> dplyr::group_by(decade) |> dplyr::filter(n == max(n)) |>
+  dplyr::filter(name == "Owen")
+```
+
+b) your supervisor’s name the most popular?
+Years:
+```{r}
+babynames_decade |> dplyr::filter(name=="Anthea") |> dplyr::arrange(desc(prop))
+
+#2: 
+babynames_decade |> dplyr::group_by(year) |> dplyr::filter(n == max(n)) |>
+  dplyr::filter(name == "Anthea")
+```
+Decades:
+```{r}
+babynames_decade |> dplyr::filter(name=="Anthea") |>
+  dplyr::group_by(decade, name) |>
+  dplyr::summarize(cumulative_prop = sum(prop)) |>
+  dplyr::arrange(desc(cumulative_prop))
+#2:
+babynames_decade |> dplyr::group_by(decade) |> 
+  dplyr::filter(n == max(n)) |> dplyr::filter(name == "Anthea")
+```
+
+c) Mike’s kids’ names, Jack and Scott, the most popular?
+Years:
+```{r}
+#1.
+(jack_years <- babynames_decade |> dplyr::filter(name == "Jack") |> 
+   dplyr::arrange(desc(prop)))
+(scott_years <- babynames_decade |> dplyr::filter(name == "Scott") |> 
+    dplyr::arrange(desc(prop)))
+#2.
+babynames_decade |> dplyr::group_by(year) |> dplyr::filter(n == max(n)) |> 
+  dplyr::filter(name == "Jack")
+babynames_decade |> dplyr::group_by(year) |> dplyr::filter(n == max(n)) |> 
+  dplyr::filter(name == "Scott")
+```
+Decades:
+```{r}
+(jack_decades <- babynames_decade |> 
+   dplyr::filter(name == "Jack") |> 
+   dplyr::group_by(decade, name) |> 
+   dplyr::summarize(cumulative_prop = sum(prop)) |> 
+   dplyr::arrange(desc(cumulative_prop))
+)
+
+(scott_decades <- babynames_decade |> 
+    dplyr::filter(name == "Scott") |> 
+    dplyr::group_by(decade, name) |> 
+    dplyr::summarize(cumulative_prop = sum(prop)) |> 
+    dplyr::arrange(desc(cumulative_prop))
+)
+#2.
+babynames_decade |> dplyr::group_by(decade) |> dplyr::filter(n == max(n)) |> 
+  dplyr::filter(name == "Jack")
+babynames_decade |> dplyr::group_by(decade) |> dplyr::filter(n == max(n)) |> 
+  dplyr::filter(name == "Scott")
+```
+The names in this question appear to never have been the most popular name for any given year or decade, meaning that approach one is likely the correct interpretation of the question.
