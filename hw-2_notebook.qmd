@@ -50,8 +50,6 @@ editor: visual
         )
     ```
 
-<!-- -->
-
 6.  What’s the total number of words spoken by: a) male hobbits, b) female elves, and c) male elves?
 
     ```{r}
