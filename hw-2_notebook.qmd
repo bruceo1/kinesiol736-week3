@@ -1,5 +1,6 @@
 ---
 title: "hw-2_notebook"
+author: "Owen Bruce"
 format: pdf
 editor: visual
 ---
